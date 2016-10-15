@@ -4,171 +4,123 @@ Created on Thu Jul 14 19:07:44 2016
 
 @author: Alfanhui
 """
-
 import numpy as np
 from drawnow import drawnow
 import matplotlib.pyplot as plt
 import time
+import itertools
+import math
+import threading
 
-class pixel():
-    __slots__ = {'dimension'}
+
+
+class Pixel(threading.Thread):
+    __slots__ = 'dimensions', 'outData', 'count', 'displayThread'
 
     def __init__(self):
-        self.dimension = 400
+        self.dimensions = 3
+        self.outData = np.zeros((self.dimensions,self.dimensions), dtype=np.int)
+        self.count = 1.0
+        #plt.ion()
+        #fig = plt.figure()
+        threading.Thread.__init__(self)
 
-    def update(self):
-        plt.ion()
-        fig = plt.figure()
-        #plt.show(block=False)
-        for k in range(1000):
-            #self.draw_fig(outData)
-            #plt.draw()
-            drawnow(self.draw_fig)
-            plt.pause(0.0001)
 
-    def  draw_fig(self):
+    def draw_fig(self):
         #plt.subplot(1, 1, 1)
-        outData = self.randomise()
-        plt.imshow(outData, cmap=plt.cm.gray)
-
+        #outData = self.randomise()
+        plt.imshow(self.outData, cmap=plt.cm.gray)
 
     def randomise(self):
-        outData = np.random.randint(2, size=(self.dimension, self.dimension))
-        return outData
+        self.outData = np.random.randint(2, size=(self.dimensions, self.dimensions))
+        return self.outData
 
-    def permutate(self):
+    def permutate0(self):
+        #plt.ion()
+        #fig = plt.figure()
+        pixels = self.dimensions*self.dimensions
+        for i in range(pixels,pixels+1):
+            res = itertools.product([1,0], repeat=i)
+            for j in res:
+                self.outData = np.array(j).reshape(self.dimensions, self.dimensions)
+                drawnow(self.draw_fig)
+                #plt.pause(0.0001)
+
+    def permutate1(self):
         #method to move items along in an array to reach all permutations.
-        permValid = False; #boolean to check if permutation still should go on.
-        while(!permValid): #start the array process.
-            switch(rotation){
-                case 0: #for first permutation, not used afterwards.
-                    #System.out.println("CASE 0");
+        self.outData[0][0] = 1
+        #self.update()
+        #totalPerms = math.pow(2,(self.dimensions*self.dimensions))
+        self.randomise()
+        while(1):#(self.count < totalPerms): #start the array process.
+            self.rotation1()
+            self.rotation2()
+            self.rotation3()
+            self.rotation2()
 
-                sequence[0][0] = 1;
-                displayArray();
-                rotation++;
-                break;
-                case 1:
-                System.out.println("CASE 1");
-                for(int x=0;x<sequence.length;x++){
-                    for(int y=0;y<sequence[x].length;y++){ //2nd rotation
-                        try{
-                            if(sequence[x][y] == 1){
-                                sequence[x][y] = 0;
-                                if(y==(di-1)){
-                                    sequence[x+1][0] = 1;
-                                }else
-                                    sequence[x][y+1] = 1;
-                                displayArray();
-                                rotation++;
-                                counter++;
-                                break;
-                            }
-                        }catch(Throwable e){
-                            System.out.println("CASE 1" + e);
-                        }
-                    }
-                }
-                case 2:
-                System.out.println("CASE 2");
-                for(int x=0;x<sequence.length;x++){
-                    for(int y=0;y<sequence[x].length;y++){ //3rd rotation
-                        try{
-                            if(sequence[x][y] == 0){
-                                sequence[x][y] = 1;
-                                displayArray();
-                                rotation++;
-                                counter++;
-                                break;
-                            }
-                        }catch(Throwable e){
-                            System.out.println("CASE 2" + e);
-                        }
-                    }
-                }
-                case 3:
-                System.out.println("CASE 3");
-                for(int x=0;x<sequence.length;x++){
-                    for(int y=0;y<sequence[x].length;y++){ //4rd rotation
-                        try{
-                            if(sequence[x][y] == 0){
-                                sequence[x][y] = 1;
-                                int b = y--;
-                                for(int a = x;a > -1; a--){
-                                    for(;b>-1;b--)
-                                        sequence[a][b] = 0;
-                                    b = (di-1);
-                                }
-                                displayArray();
-                                rotation++;
-                                counter++;
-                                break;
-                            }
-                        }catch(Throwable e){
-                            System.out.println("CASE 3" + e);
-                        }
-                    }
-                }
-                    case 4:
-                System.out.println("CASE 4");
-                    for(int x=0;x<sequence.length;x++){
-                    for(int y=0;y<sequence[x].length;y++){ //3rd rotation
-                        try{
-                            if(sequence[x][y] == 0){
-                                sequence[x][y] = 1;
-                                displayArray();
-                                rotation=1;
-                                counter++;
-                                break;
-                            }
-                        }catch(Throwable e){
-                            System.out.println("CASE 4" + e);
-                        }
-                    }
-                }
-
-            }
-            permValid = checkArray();
-        }
-        System.out.println("Total achieved Permutations = " + counter);
-    }
+    def rotation1(self):
+        for x in xrange(len(--self.outData)):#2nd rotation
+            for y in xrange(len(--self.outData[x])):
+                if(self.outData[x][y] == 1):
+                    self.outData[x][y] = 0
+                    if(y == --self.dimensions):
+                        self.outData[x+1][0] = 1
+                    else:
+                        self.outData[x][y+1] = 1
+                    drawnow(self.draw_fig)
+                    self.count +=1
+                    return
+    def rotation2(self):
+        for x in xrange(len(--self.outData)):#3rd rotation
+            for y in xrange(len(--self.outData[x])):
+                if(self.outData[x][y] == 0):
+                    self.outData[x][y] = 1
+                    self.count +=1
+                    drawnow(self.draw_fig)
+                    return
+    def rotation3(self):
+        for x in xrange(len(--self.outData)):#4th rotation
+            for y in xrange(len(--self.outData[x])):
+                if(self.outData[x][y] == 0):
+                    self.outData[x][y] = 1
+                    b = (y-1)
+                    a = x
+                    for a in xrange(a, -1, -1):
+                        for b in xrange(b, -1, -1):
+                            self.outData[a][b] = 0
+                        b = (self.dimensions-1)
+                    self.count+=1
+                    drawnow(self.draw_fig)
+                    return
 
 
-
-
-    '''
-    def start(self):
-        #outData = np.zeros((self.dimension, self.dimension))
-        f = 0
-        i = 1000
+class Display(threading.Thread):
+    def __init__(self):
         plt.ion()
-        plt.figure()
-        #ax = fig.add_subplot(111)
-        while f < i:
-            outData = self.randomise()
-            plt.imshow(outData)
-            #plt.imshow(outData)
-            plt.draw()
-
-    def start2(self):
         fig = plt.figure()
-        for k in range(10):
-            plt.clf()
-            outData = self.randomise()
-            plt.imshow(outData,cmap=plt.cm.gray)
-            fig.canvas.draw()
-            time.sleep(1e-60) #unnecessary, but useful
-    '''
+        threading.Thread.__init__(self)
 
+    def run(self):
+        while(1):
+            drawnow(self.draw_fig)
 
-
-
-
-
-
-
+    def draw_fig(self):
+        #plt.subplot(1, 1, 1)
+        #outData = self.randomise()
+        plt.imshow(self.outData, cmap=plt.cm.gray)
 
 
 if __name__ == '__main__':
-    pixel = pixel()
-    pixel.update()
+    pixel = Pixel()
+    #start = time.clock()
+    #pixel.permutate0()
+    #end = time.clock()
+    #print(end - start)
+    start = time.clock()
+    pixel.permutate1()
+    #pixel.displayThread.start()
+    #pixel.start()
+    #pixel.displayThread.join()
+    #pixel.join()
+    end = time.clock()
+    print(end - start)
