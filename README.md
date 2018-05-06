@@ -13,3 +13,7 @@ Implement a camera feed or jpg importer to the program and converting the image 
 
 ## Third stage<p style='color:blue'>(NOT STARTED)</p>
 Make the program interactive. An idea would be to take a still camera image, then in the sequence, rewind the algorithm by a few 10,000 iterations (or how ever many iterations can happen in 10 seconds), then to play the sequence - as if we were running the program through sequence, with a pause of a few seconds to show you that your camera feed is represented in the image, ending with some iterations back into oblivion.<br><br>
+
+## How to Run
+Open Terminal
+`javac Pixel.java && java Pixel`
