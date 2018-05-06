@@ -1,3 +1,5 @@
+<p align="center"><img src="https://github.com/alfanhui/pixel/raw/master/logo.png?raw=true"/></p>
+
 # pixel
 A digital camera takes a picture, whether it is of your face or a place you love, we can take that picture and say 'This is me' or 'This is my home' and we can understand this connection. But, what if I reminded you that a camera is limited, by its image sensor, its color depth, by its field of view: would that mean that your face was pre-determined in the camera? That by setting the right values, we can produce images that you recognize as your mother or your house?<br>
 
