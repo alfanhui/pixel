@@ -18,7 +18,7 @@ class Pixel(threading.Thread):
     __slots__ = 'dimensions', 'outData', 'count', 'displayThread'
 
     def __init__(self):
-        self.dimensions = 3
+        self.dimensions = 9
         self.outData = np.zeros((self.dimensions,self.dimensions), dtype=np.int)
         self.count = 1.0
         #plt.ion()
@@ -92,6 +92,25 @@ class Pixel(threading.Thread):
                     self.count+=1
                     drawnow(self.draw_fig)
                     return
+
+    def seqInterpretur(self):
+        seqLength = float(math.pow(2,(self.dimensions*self.dimensions)))
+        seqLower = 0.0
+        seq = 0.0
+        self.outData.resize(1)
+        for x in range(len(self.outData)):
+            if(seq == 0 and self.outData[x] == 1):
+                seqLength-=1
+                seq = math.pow(2,(seqLength-1))
+            else:
+                if(self.outData[x] == 1): #if 1 then sequence is higher than lowerbound.
+                    seqLower -= 1
+                    seqLower = math.power(2,(seqLength-1))
+                    seq+=(seqLower/2)
+               #else: #if 0 then lower bound is maximum.
+            seqLength-=1
+        print("Randomised sequence is: ", seq,  ".")
+        print("Sequence is " , ((seq / math.pow(2,((self.dimensions*self.dimensions)-1)))*100),"%")
 
 
 class Display(threading.Thread):
