@@ -7,6 +7,8 @@ This is my philosophical program, made in 3 stages:<br>
 ## First stage<p style='color:green'>(COMPLETE)</p> 
 Program generates sequences or random pixelated images. Of course the chances of a recognisable picture are so rare it might as well not happen at all. (but you're free to try!)<br><br>
 
+[Video](https://youtu.be/fpI5EB1cROw)
+
 ## Second stage<p style='color:blue'>(NOT STARTED)</p>
 Implement a camera feed or jpg importer to the program and converting the image to the dimensions and scale of the first stage. With any image and the understanding of how my sequencing algorithm works, I can determine whereabouts such an image is in its completion. (if 0% is full white image and 100% is a full black image)<br><br>
 
