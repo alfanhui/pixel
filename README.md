@@ -12,18 +12,20 @@ Program generates sequences or random pixelated images. Of course the chances of
 
 [Video](https://youtu.be/fpI5EB1cROw)
 
-## Second stage<p style='color:blue'>(NOT STARTED)
+## Second stage<p style='color:green'>(COMPLETE)
 
 Implement a camera feed or jpg importer to the program and converting the image to the dimensions and scale of the first stage. With any image and the understanding of how my sequencing algorithm works, I can determine whereabouts such an image is in its completion. (if 0% is full white image and 100% is a full black image)
 
-## Third stage<p style='color:blue'>(NOT STARTED)</p>
+## Third stage<p style='color:blue'>(PARTIAL)</p>
 
 Make the program interactive. An idea would be to take a still camera image, then in the sequence, rewind the algorithm by a few 10,000 iterations (or how ever many iterations can happen in 10 seconds), then to play the sequence - as if we were running the program through sequence, with a pause of a few seconds to show you that your camera feed is represented in the image, ending with some iterations back into oblivion.
 
 ## How to Run
 
+You will need JDK, such as opendjk installed, with JAVA_HOME set to the correct path.
+
 Open Terminal:
 
 ```bash
-javac Pixel.java && java Pixel
+./mvnw compile package exec:java
 ```

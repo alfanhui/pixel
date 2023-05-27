@@ -8,8 +8,8 @@
             "type": "java",
             "name": "Pixel",
             "request": "launch",
-            "mainClass": "Pixel",
-            "projectName": "pixel_edc65b54"
+            "mainClass": "personal.Pixel",
+            "projectName": "pixel"
         }
     ]
 }

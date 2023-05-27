@@ -1,11 +1,15 @@
+package personal;
+
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.image.BufferedImage;
 import java.lang.Math;
 import java.math.BigInteger;
+import java.nio.ByteBuffer;
 import java.text.DecimalFormat;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -13,6 +17,10 @@ import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import java.awt.image.DataBufferByte;
+
+import com.github.sarxos.webcam.Webcam;
+import com.github.sarxos.webcam.WebcamPanel;
 
 
 public class Pixel extends JComponent {
@@ -26,6 +34,11 @@ public class Pixel extends JComponent {
     public JLabel permutationLabel;
     public JLabel maxPermutationLabel;
     public static BigInteger maxPermutations = BigInteger.valueOf(2).pow(di * di);
+    public static int radix = 1024;
+    public static boolean useWebcam = false;
+    public static boolean usePermutations = false;
+    public int index = -2;
+    public static Thread webcamThread = null;
 
     public Pixel() {
         this.bytes = new byte[BYTE_ARRAY_SIZE];
@@ -50,20 +63,35 @@ public class Pixel extends JComponent {
         JButton newLineButton = new JButton("Permutate");
         JButton clearButton = new JButton("Clear");
         JButton randomiseButton = new JButton("Randomise Sequence");
+        JButton webcamButton = new JButton("Take Picture");
         buttonsPanel.add(newLineButton);
         buttonsPanel.add(clearButton);
         buttonsPanel.add(randomiseButton);
+        buttonsPanel.add(webcamButton);
         testFrame.getContentPane().add(buttonsPanel, BorderLayout.SOUTH);
 
         JPanel metricPanel = new JPanel();
         comp.percentageCompleteLabel = new JLabel("0.00%");
-        comp.permutationLabel = new JLabel("0");
-        comp.maxPermutationLabel = new JLabel(maxPermutations.toString(1));
+        comp.permutationLabel = new JLabel("Permuation number: tbc");
+        comp.maxPermutationLabel = new JLabel("Max Permutations: a lot");
+        //comp.maxPermutationLabel = new JLabel(maxPermutations.toString(radix));
         metricPanel.setLayout(new BoxLayout(metricPanel, BoxLayout.Y_AXIS));
         metricPanel.add(comp.percentageCompleteLabel);
         metricPanel.add(comp.permutationLabel);
         metricPanel.add(comp.maxPermutationLabel);
         testFrame.getContentPane().add(metricPanel, BorderLayout.EAST);
+
+
+        //webcam
+        Webcam webcam = Webcam.getDefault();
+		webcam.setViewSize(new Dimension(176, 144));
+		WebcamPanel webcamPanel = new WebcamPanel(webcam);
+		webcamPanel.setFPSDisplayed(false);
+		webcamPanel.setDisplayDebugInfo(false);
+		webcamPanel.setImageSizeDisplayed(true);
+		webcamPanel.setMirrored(false);
+        webcam.setImageTransformer(new Transformer());
+        testFrame.getContentPane().add(webcamPanel, BorderLayout.WEST);
 
         for (int i = 0; i < BYTE_ARRAY_SIZE; i++) {
             comp.bytes[i] = -128;
@@ -74,12 +102,30 @@ public class Pixel extends JComponent {
                 System.out.println("PERMA STARTED ");
                 new Thread(new Runnable() {
                     public void run() {
-                        while (permutations.compareTo(maxPermutations) < 0) {
-                            comp.incrementAtIndex(comp.bytes, 0);
-                            comp.inferPermutationCount(permutations);
-                            comp.permutationLabel.setText(permutations.toString(10));
+                        usePermutations = !usePermutations;
+                        if(useWebcam){
+                            webcamThread.interrupt();
+                            webcamThread = null;
+        
+                            if(comp.index == -2){
+                                comp.index = comp.nextArrayToIncrement(calculatePermutationNumber(comp.bytes));
+                                if (comp.index == -1){
+                                    System.out.println("Index is -1");
+                                }
+                            }
+                            while(usePermutations){
+                                comp.incrementAtIndex(comp.bytes, comp.index);
+                                comp.inferPermutationCount(permutations);
+                            }
+                      
+                        }else{
+                            while (permutations.compareTo(maxPermutations) < 0) {
+                                comp.incrementAtIndex(comp.bytes, 0);
+                                comp.inferPermutationCount(permutations);
+                                //comp.permutationLabel.setText(permutations.toString(radix));
+                            }
+                            System.out.println("Finished! permutations: " + permutations.toString(radix));
                         }
-                        System.out.println("Finished! permutations: " + permutations.toString(10));
                     }
                 }).start();
             }
@@ -96,14 +142,41 @@ public class Pixel extends JComponent {
             }
         });
 
+        
         randomiseButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 comp.randomise();
                 permutations = calculatePermutationNumber(comp.bytes);
                 comp.inferPermutationCount(permutations);
-                comp.permutationLabel.setText(permutations.toString(10));
+                //comp.permutationLabel.setText(permutations.toString(radix));
                 comp.repaint();
+            }
+        });
+
+        webcamButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                System.out.println("Webcam Button Pressed");
+                useWebcam = !useWebcam;
+                if(!useWebcam && webcamThread != null){
+                    webcamThread.interrupt();
+                    webcamThread = null;
+                }else{
+                    webcamThread = new Thread(new Runnable() {
+                        public void run() {
+                            while (useWebcam) {
+                                comp.bytes = comp.getWebcamData(webcam.getImage());
+                                permutations = calculatePermutationNumber(comp.bytes);
+                                comp.inferPermutationCount(permutations);
+                                comp.repaint();
+                            }
+                
+                        }
+                    });
+                    webcamThread.start();
+                }
+                
             }
         });
         testFrame.pack();
@@ -117,11 +190,79 @@ public class Pixel extends JComponent {
         }
     }
 
+
+    public byte[] getWebcamData(BufferedImage image){
+        byte[] buffer = ByteBuffer.wrap(this.imageToBytes(image)).array();
+        
+        byte[] new_buffer = new byte[BYTE_ARRAY_SIZE];
+        int i = 0;
+        int byte_counter = 0;
+        for (byte b : buffer) {
+            //No idea why this is the case, it causes line artifacts else
+            if(i == 7){
+                switch(b){
+                    case -1:
+                        new_buffer[byte_counter] |= 1 << i;
+                    break;
+                    case 0:
+                        new_buffer[byte_counter] &= ~(1 << i);
+                        break;
+                    default:
+                        System.out.println("error!");
+                }
+            }
+            if(i != 7){
+                switch(b){
+                    case -1:
+                        new_buffer[byte_counter] &= ~(1 << i);
+                        break;
+                    case 0:
+                        new_buffer[byte_counter] |= 1 << i;
+                        break;
+                    default:
+                        System.out.println("error!");
+                }
+            }
+            i++;
+            if(i > 7){
+                i=0;
+                byte_counter++;
+            }
+        }
+        return new_buffer;
+    }
+
+    /**
+    * Retun 720p resolution sizern image raster as bytes array.
+    *
+    * @param bi the {@link BufferedImage}
+    * @return The 720p resolution sizeraster data as byte array
+    */
+    public byte[] imageToBytes(BufferedImage bi) {
+        return ((DataBufferByte) bi.getData().getDataBuffer()).getData();
+    }
+
+    public int nextArrayToIncrement(BigInteger currentPermutation) {
+        return compareByteArrays(currentPermutation.toByteArray(), currentPermutation.add(BigInteger.ONE).toByteArray());
+    }
+
+    public int compareByteArrays(byte[] first, byte[] second){
+        if(first.length != second.length){
+            return -1;
+        }
+        for(int i = 0; i <= first.length; i++){
+            if (first[i] != second[i]){
+                return i;
+            }
+        }
+        return -1;
+    }
+
     public void inferPermutationCount(BigInteger permutations) {
         BigInteger percentageTotal = permutations.multiply(new BigInteger("100")).divide(maxPermutations);
         DecimalFormat decimalFormat = new DecimalFormat("#0.00");
         String formattedPercentage = decimalFormat.format(percentageTotal);
-        this.percentageCompleteLabel.setText(formattedPercentage + "%");
+        this.percentageCompleteLabel.setText(formattedPercentage + "% complete");
     }
 
     public static BigInteger calculatePermutationNumber(byte[] byteArray) {
@@ -141,7 +282,7 @@ public class Pixel extends JComponent {
     private void incrementAtIndex(byte[] array, int index) {
         if (array[index] == Byte.MAX_VALUE) {
             array[index] = -128;
-            if (index < array.length)
+            if (index < (array.length-1))
                 incrementAtIndex(array, index + 1);
         } else {
             repaint();
