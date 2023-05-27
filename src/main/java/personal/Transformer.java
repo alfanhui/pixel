@@ -7,7 +7,6 @@ import java.awt.image.BufferedImage;
 import com.github.sarxos.webcam.WebcamImageTransformer;
 import com.jhlabs.image.ThresholdFilter;
 
-
 public class Transformer implements WebcamImageTransformer {
 
     // threshold is a value in range of [1, 255]
@@ -16,7 +15,7 @@ public class Transformer implements WebcamImageTransformer {
 	@Override
 	public BufferedImage transform(BufferedImage image) {
 
-		BufferedImage modified = new BufferedImage(128, 128, BufferedImage.TYPE_BYTE_GRAY);
+		BufferedImage modified = new BufferedImage(Pixel.di, Pixel.di, BufferedImage.TYPE_BYTE_GRAY);
 
         final BufferedImage binary = binarizer.filter(image, null);
         

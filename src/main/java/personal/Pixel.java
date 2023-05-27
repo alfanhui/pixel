@@ -10,7 +10,6 @@ import java.awt.image.BufferedImage;
 import java.lang.Math;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
-import java.text.DecimalFormat;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -25,7 +24,7 @@ import com.github.sarxos.webcam.WebcamPanel;
 
 public class Pixel extends JComponent {
 
-    public static int di = 128; // dimentions
+    public static int di = 144; // dimentions
     public static final int BYTE_ARRAY_SIZE = (di * di) / 8;
     public static Pixel comp;
     public byte[] bytes;
@@ -84,7 +83,8 @@ public class Pixel extends JComponent {
 
         //webcam
         Webcam webcam = Webcam.getDefault();
-		webcam.setViewSize(new Dimension(176, 144));
+        Dimension[] dimensions = webcam.getViewSizes();
+		webcam.setViewSize(dimensions[0]);
 		WebcamPanel webcamPanel = new WebcamPanel(webcam);
 		webcamPanel.setFPSDisplayed(false);
 		webcamPanel.setDisplayDebugInfo(false);
@@ -93,9 +93,13 @@ public class Pixel extends JComponent {
         webcam.setImageTransformer(new Transformer());
         testFrame.getContentPane().add(webcamPanel, BorderLayout.WEST);
 
+        //Reset image to white.
         for (int i = 0; i < BYTE_ARRAY_SIZE; i++) {
             comp.bytes[i] = -128;
         }
+
+
+        //Button actions
         newLineButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -130,6 +134,7 @@ public class Pixel extends JComponent {
                 }).start();
             }
         });
+
         clearButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -142,7 +147,6 @@ public class Pixel extends JComponent {
             }
         });
 
-        
         randomiseButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -198,7 +202,7 @@ public class Pixel extends JComponent {
         int i = 0;
         int byte_counter = 0;
         for (byte b : buffer) {
-            //No idea why this is the case, it causes line artifacts else
+            //No idea why raster to btye arry causes this case, line artifacts else
             if(i == 7){
                 switch(b){
                     case -1:
@@ -232,12 +236,6 @@ public class Pixel extends JComponent {
         return new_buffer;
     }
 
-    /**
-    * Retun 720p resolution sizern image raster as bytes array.
-    *
-    * @param bi the {@link BufferedImage}
-    * @return The 720p resolution sizeraster data as byte array
-    */
     public byte[] imageToBytes(BufferedImage bi) {
         return ((DataBufferByte) bi.getData().getDataBuffer()).getData();
     }
@@ -260,9 +258,7 @@ public class Pixel extends JComponent {
 
     public void inferPermutationCount(BigInteger permutations) {
         BigInteger percentageTotal = permutations.multiply(new BigInteger("100")).divide(maxPermutations);
-        DecimalFormat decimalFormat = new DecimalFormat("#0.00");
-        String formattedPercentage = decimalFormat.format(percentageTotal);
-        this.percentageCompleteLabel.setText(formattedPercentage + "% complete");
+        this.percentageCompleteLabel.setText(percentageTotal + "% complete");
     }
 
     public static BigInteger calculatePermutationNumber(byte[] byteArray) {

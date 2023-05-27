@@ -2,6 +2,8 @@
 
 # pixel
 
+<p align="center"><img src="./Screenshot-2023-1.png"/></p>
+
 A digital camera takes a picture, whether it is of your face or a place you love, we can take that picture and say 'This is me' or 'This is my home' and we can understand this connection. But, what if I reminded you that a camera is limited, by its image sensor, its color depth, by its field of view: would that mean that your face was pre-determined in the camera? That by setting the right values, we can produce images that you recognize as yourself or your house? Therefore, if we ran through every possible combination picture a camera could possibly take, would we not see your face or my face or your house, now, from 20 years ago, or even see into the future?<br>
 
 This is my philosophical program, made in 3 stages:
