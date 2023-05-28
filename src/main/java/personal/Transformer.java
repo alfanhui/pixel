@@ -10,7 +10,7 @@ import com.jhlabs.image.ThresholdFilter;
 public class Transformer implements WebcamImageTransformer {
 
     // threshold is a value in range of [1, 255]
-    final ThresholdFilter binarizer = new ThresholdFilter(128);
+    final ThresholdFilter binarizer = new ThresholdFilter(100);
 
 	@Override
 	public BufferedImage transform(BufferedImage image) {
